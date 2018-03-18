@@ -1,0 +1,95 @@
+@import "bourbon"
+@import "vars.sass"
+
+//Load Libs SASS
+@import "app/libs/animate/animate.sass"
+
+*::-webkit-input-placeholder
+	color: #666
+	opacity: 1
+
+*:-moz-placeholder
+	color: #666
+	opacity: 1
+
+*::-moz-placeholder
+	color: #666
+	opacity: 1
+
+*:-ms-input-placeholder
+	color: #666
+	opacity: 1
+
+body input:focus:required:invalid,
+body textarea:focus:required:invalid
+	color: #666
+body input:required:valid,
+body textarea:required:valid
+	color: #666
+
+
+canvas
+	width:550px !important
+	height:250px !important
+
+.s-wide
+	padding: 80px 0
+	.manageButtons
+		margin: 10px auto
+		text-align: center
+		.centerBut
+			display: inline-block
+
+.picture
+	text-align: center
+	.main-tank
+		display: inline-block
+		z-index: 0
+		.tank
+			width: 300px
+			height: 100%
+	.manage-tools
+		position: absolute
+		height: 45px
+		width: 90px
+		top: 87%
+		left: 48%
+		z-index: 5
+		&:hover
+			cursor: pointer
+		span
+			margin-top: 10px
+			display: inline-block
+			position: absolute
+			left: 5%
+		.img-svg
+			height: 45px
+		.img-svg-left
+			float: left
+			transform: rotate(90deg)
+		.img-svg-right
+			left: 100%
+			transform: rotate(270deg)
+		.left-btn:hover
+			span
+				color: green
+			.img-svg
+				path
+					fill: green
+		.right-btn
+			span
+				left: 70%
+			&:hover
+				span
+					color: red
+				.img-svg
+					path
+						fill: red		
+
+
+
+//Custom Styles Here
+
+
+//ALWAYS END
+@import "media"
