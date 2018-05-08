@@ -36,6 +36,7 @@ $(function() {
 		datasets : [
 			{
 				label: "Переходная характеристика",
+				lineTension: 0,
 				fillColor : "rgba(220,220,220,0.5)",
 				strokeColor : "rgba(220,220,220,1)",
 				pointColor : "rgba(220,220,220,1)",
@@ -100,110 +101,231 @@ $(function() {
 	var StartButton = document.getElementById("StartButton");
 	var StopButton = document.getElementById("StopButton");
 	var UpButton = document.getElementById("UpButton");
-	var DownButton = document.getElementById("DownButton");
+	var DownButton = document.getElementById("DownButton");	
+	var UpButtonEnter = document.getElementById("UpButtonEnter");
+	var DownButtonEnter = document.getElementById("DownButtonEnter");
 	var ClearButton = document.getElementById("ClearButton");
 	var NoiseButton = document.getElementById("NoiseButton");
 	var FastBuild = document.getElementById("FastBuild");
+	var valueOfU = document.getElementById("valueOfU");
+	var valueOfU1 = document.getElementById("valueOfU1");
+	var valueOfLiquid = document.getElementById("valueOfLiquid");
+	var valueOfX = document.getElementById("valueOfX");
+	var checkbox = document.getElementById("checkbox");
+	var inputX = document.getElementById("inputX");
+	var selectSpeed = document.getElementById("choosingSpeed");
 
-	class ElementAP {
-
-		constructor(K, T, U, time){
+	class Model {
+		constructor(K, T) {
 			this.K = K;
-			this.T = T;
-			this.U = U;
-			this.timer;
-			this.time = 10;
-			this.noise = 0;
+            this.T = T;
+            this._y = 0;
+            this._yprev = 0;
+            this._time = 0;
 		}
 
-		set setU(U){
-			this.U = U;
-		}
-
-		get getU(){
-			return this.U;
-		}
-
-		// `creatingChart` create chart with using library Chart.js, `makechart` launch timer and create chart dynamically depend from real time
-
-		creatingChart(){
-		   chart.data.datasets[0].data.push(this.U*this.K*(1 - Math.pow(Math.exp(1), -this.time/this.T)) + this.Noise());   // set new Point at the Y`s axe
-		   var valOfLabel = chart.data.labels[chart.data.labels.length-1] + 1;
-		   chart.data.labels.push(valOfLabel); 	 															// set new Point at the X`s axe
-		   chart.update();  
-		   this.time = this.time + 100;
-		}
-
-		startTimer(){
-			if(this.timer == undefined){
-				this.timer = setInterval(() => {
-					this.creatingChart();
-				}, 1000)
-			}	
-		}
-
-		stopTimer(){
-			if(this.timer != undefined){
-				clearInterval(this.timer); 																	// if timer exist i stop it
-				this.timer = undefined;
-			} else {
-				console.log("timer is undefined");
+		getY(U, U1) {
+			this._y = this.K * this._time * (U - U1) / this.T + this._yprev;
+			if(this._y < 0) {
+				this._y = 0;
 			}
-		}
+			this._yprev = this._y;
 
-		clearChart(){
-			this.stopTimer();
-			this.time = 10;
-			chart.data.datasets[0].data.splice(1, chart.data.datasets[0].data.length);
-			chart.data.labels.splice(1, chart.data.labels.length);
-		    chart.update();
+			return this._y;
 		}
-
-		Noise(){
-			if(NoiseButton.defaultValue == `Noise On`){
-				return ElementAP.randomNumber(0, 100)/Math.pow(10, 6);
-			} else {
-				return 0;
-			}
-		}
-
-		static randomNumber(min, max){
-			var rand = min - 0.5 + Math.random() * (max - min + 1)
-		    rand = Math.round(rand);
-		    return rand;
-		}
-
-		fastBuild(){
-			if(chart.data.labels[chart.data.labels.length-1] == 0){
-				for(let i = 0; i < 121; i++){
-					this.creatingChart()
-				}
-			}
-		}
-
 	}
 
-	// Creating new object with name newTank
+	class PIDcontroler extends Model {
+		constructor(Kp, Tu, Td){
+			super(Kp, Tu);
+			this.Td = Td;
+			this.u = 0;
+			this.u_1 = 0;
+			this.e = 0;
+			this.e_1 = 0;
+			this.e_2 = 0;
+		}
 
-	var newTank = new ElementAP(9*Math.pow(10, -4), 1087, 1);
+		getU(e, dt = 1) {
+            this.u = this.u_1+this.K*(1+this.Td/dt)*e-this.K*(1+2*(this.Td/dt)-(dt/this.T))*this.e_1+this.K*(this.Td/dt)*this.e_2;
+            this.u_1 = this.u;
+            this.e_2 = this.e_1;
+            this.e_1 = e;
 
-	// Buttons -----> They start functional of class`s methods
-
-	StartButton.onclick = () => { newTank.startTimer(); } 
-
-	StopButton.onclick = () => { newTank.stopTimer() }
-
-	UpButton.onclick = () => { newTank.setU = newTank.getU + 1; }
-
-	DownButton.onclick = () => { newTank.setU = newTank.getU - 1; };
-
-	ClearButton.onclick = () => { newTank.clearChart(); }
-
-	NoiseButton.onclick = () => { 
-		NoiseButton.defaultValue = (NoiseButton.defaultValue == `Noise On`) ? `Noise Off` : `Noise On`;
-		newTank.Noise(); 
+            return this.u;
+		}
 	}
 
-	FastBuild.onclick = () => { newTank.fastBuild() }
+
+	var timerForChart = null;
+	var timer = null;  					// for buttons up and Down U, U1
+	var model = new Model(2.5, 9);
+	var modelPID = new PIDcontroler(0.2, 1.6, 0);
+	var y;
+	var e;
+	var u;
+	var changeTime = 1000/ (+selectSpeed.value);
+
+	checkbox.setAttribute("checked", "checked");
+	UpButtonEnter.style.opacity = .2;
+	DownButtonEnter.style.opacity = .2;
+
+	modelPID._time += 1;
+	y = modelPID.getY(+valueOfU.innerText, +valueOfU1.innerText);
+    e = y - (+inputX.value);
+    u = modelPID.getU(e);
+    valueOfU1.innerHTML = `<p><b>U1 = ${Math.round(u)}</b></p>`;
+	chart.data.labels.push(modelPID._time);	
+	chart.data.datasets[0].data.push(y); 
+	chart.update();
+
+	checkbox.onclick = () => {
+		if(checkbox.getAttribute("checked") == "checked"){
+			valueOfX.style.display = "none";
+			checkbox.setAttribute("checked", "")
+			UpButtonEnter.style.opacity = 1;
+			DownButtonEnter.style.opacity = 1;
+		} else {
+			valueOfX.style.display = "block";
+		}
+	}
+
+	selectSpeed.addEventListener("change", ()=>{
+		changeTime = 1000 / (+selectSpeed.value);
+	});
+	
+	
+	StartButton.addEventListener("click", () => {
+
+		if(checkbox.getAttribute("checked") == "checked"){
+			var noise = 0;
+			if(NoiseButton.value == "Noise On"){
+				noise = 0 - 0.5 + Math.random() * (1 - 0 + 1)
+			} else {
+				noise = 0;
+			}
+
+			timerForChart = setTimeout( function tick(){
+			y = modelPID.getY(+valueOfU.innerText, u) + noise;
+			e = y - (+inputX.value);
+		    u = modelPID.getU(e);
+		    valueOfU1.innerHTML = `<p><b>U1 = ${Math.round(u)}</b></p>`;
+		    modelPID._time += 1;
+			chart.data.labels.push(modelPID._time);	
+	 		chart.data.datasets[0].data.push(y); 
+			chart.update();
+			console.log(noise);
+			timerForChart = setTimeout(tick, changeTime);
+			}, changeTime);
+		} else {
+			timerForChart = setInterval(() => {
+			model._time += 1;
+			chart.data.labels.push(model._time);	
+	 		chart.data.datasets[0].data.push(model.getY()); 
+			chart.update();
+			valueOfLiquid.innerHTML = `<p>${model.getY()}</p>`
+		}, 1000)
+		}
+	});
+
+
+
+	StopButton.onclick = function(){
+		if(timerForChart) {
+			clearTimeout(timerForChart);
+			timerForChart = null;
+		} else {
+			alert(`timerForChart is already working`);
+		}
+	}	
+
+
+	UpButton.addEventListener("mousedown", () => {
+		timer = setInterval(() => {
+			let U = +valueOfU.innerText;
+			valueOfU.innerHTML = `<p><b>U = ${++U}</b></p>`;
+			valueOfU.innerText = U;
+		}, 150);
+	})
+
+	UpButton.addEventListener("mouseup", () => {
+		timer != undefined ? clearInterval(timer) : console.log("timer doesn`t exist");
+	});
+
+	DownButton.addEventListener("mousedown", () => {
+		timer = setInterval(() => {
+			let U = +valueOfU.innerText;
+			valueOfU.innerHTML = `<p><b>U = ${--U}</b></p>`;
+			valueOfU.innerText = U;
+		}, 150);
+	});
+
+	DownButton.addEventListener("mouseup", () => {
+		timer != undefined ? clearInterval(timer) : console.log("timer doesn`t exist");
+	});	
+
+	inputX.addEventListener("blur", () => {
+		if(+inputX.value > 100 || +inputX.value < 0){
+			alert("invalid value, try another");
+			inputX.value = 100;
+		}
+	});
+
+	NoiseButton.addEventListener("click", () => {
+		if(NoiseButton.value == "Noise Off"){
+			NoiseButton.value = "Noise On";
+		} else {
+			NoiseButton.value = "Noise Off";
+		}
+	});
+
+	FastBuild.addEventListener("click", () => {
+		for(let i = 0; i < 150; i++) {
+			var noise = 0;
+			if(NoiseButton.value == "Noise On"){
+				noise = 0 - 0.5 + Math.random() * (1 - 0 + 1)
+			} else {
+				noise = 0;
+			}
+			y = modelPID.getY(+valueOfU.innerText, u) + noise;
+			e = y - (+inputX.value);
+		    u = modelPID.getU(e);
+		    valueOfU1.innerHTML = `<p><b>${Math.round(u)}</b></p>`;
+		    modelPID._time += 1;
+			chart.data.labels.push(modelPID._time);	
+	 		chart.data.datasets[0].data.push(y); 
+			chart.update();
+		}
+	});
+
+	ClearButton.addEventListener("click", () => {
+/*	if(timerForChart){
+		clearTimeout(timerForChart);
+	}
+			console.log(valueOfU1.innerText);
+			console.log(valueOfU.innerText);
+
+	chart.data.datasets[0].data.splice(1, chart.data.datasets[0].data.length);
+	chart.data.labels.splice(1, chart.data.labels.length);
+	chart.update();
+
+	modelPID._time = 0;
+	modelPID._time += 1;
+	console.log(modelPID._time);
+	y = modelPID.getY(Math.round(+valueOfU.innerText), Math.round(+valueOfU1.innerText));
+	console.log(y);
+    e = y - (+inputX.value);
+    u = modelPID.getU(e);
+    valueOfU1.innerHTML = `<p><b>U1 = ${Math.round(u)}</b></p>`;
+
+	chart.data.labels.push(modelPID._time);	
+	chart.data.datasets[0].data.push(y); 
+	chart.update();
+*/
+	valueOfLiquid.innerHTML = `<p>${y}</p>`
+	});	
 
 });
+
+
+

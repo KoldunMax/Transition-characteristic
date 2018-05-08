@@ -40,6 +40,50 @@ canvas
 		.centerBut
 			display: inline-block
 
+.chart
+	.manageButtons
+		.centerBut
+			.manage-tools
+				position: absolute
+				height: 45px
+				width: 90px
+				top: 100%
+				left: 42%
+				z-index: 5
+				&:hover
+					cursor: pointer
+				span
+					margin-top: 10px
+					display: inline-block
+					position: absolute
+					left: 5%
+				.img-svg
+					height: 45px
+				.img-svg-left
+					float: left
+					transform: rotate(90deg)
+				.img-svg-right
+					left: 100%
+					transform: rotate(270deg)
+				.left-btn:hover
+					span
+						color: green
+					.img-svg
+						path
+							fill: green
+				.right-btn
+					span
+						left: 70%
+					&:hover
+						span
+							color: red
+						.img-svg
+							path
+								fill: red	
+
+#inputX
+	width: 50px
+
 .picture
 	text-align: center
 	.main-tank
@@ -84,8 +128,9 @@ canvas
 					color: red
 				.img-svg
 					path
-						fill: red		
-
+						fill: red	
+	.entering
+		top: -5%
 
 
 //Custom Styles Here

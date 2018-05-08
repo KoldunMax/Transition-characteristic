@@ -35,7 +35,7 @@ gulp.task('scripts', function() {
 		'./app/libs/waypoints/waypoints.min.js',
 		'./app/libs/animate/animate-css.js',
 		])
-		.pipe(concat('libs.js'))
+	//	.pipe(concat('libs.js'))
 		// .pipe(uglify()) //Minify libs.js
 		.pipe(gulp.dest('./app/js/'));
 });
