@@ -7,7 +7,7 @@
 
 	<title>Заголовок</title>
 	<meta name="description" content="">
-
+	<base href="https://koldunmax.github.io/Transition-characteristic/">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 
@@ -63,6 +63,22 @@
 								<input id="ClearButton" type="button" value="Clear">
 								<input id="NoiseButton" type="button" value="Noise Off">
 								<input id="FastBuild" type="button" value="Fast Build">
+								<label for="checkbox">PID auto</label>
+								<input id="checkbox" type="checkbox" checked>
+								<span>speed-></span><select id="choosingSpeed">
+								  <option value="1">X1</option>
+								  <option value="2">X2</option>
+								  <option value="5">X5</option>
+								  <option value="10">X10</option>
+								</select>
+<!-- 								<div id="valueOfU"></div>
+<div class="manage-tools">
+	<div id="UpButton" class="left-btn"><img class="img-svg img-svg-left" src="img/triangle.svg" alt="Up"><span>Up</span></div>
+	<div id="DownButton" class="right-btn"><img class="img-svg img-svg-right" src="img/triangle.svg" alt="Down"><span>Dw</span></div>
+</div>			 -->
+								<div id="valueOfLiquid"></div>
+								<div id="valueOfX"><p><b>X = <input type="text" name="EnteringX" id='inputX' value=100></b></p></div>
+								
 							</div>
 						</div>
 
@@ -75,12 +91,20 @@
 					<div class="picture">
 						
 						<div class="main-tank">
-							<img class="tank" src="img/tank1.png" alt="tank">
+							<img class="tank" src="img/tank2.png" alt="tank">
 
-							<div class="manage-tools">
+ 							<div class="manage-tools entering">
 								<div id="UpButton" class="left-btn"><img class="img-svg img-svg-left" src="img/triangle.svg" alt="Up"><span>Up</span></div>
 								<div id="DownButton" class="right-btn"><img class="img-svg img-svg-right" src="img/triangle.svg" alt="Down"><span>Dw</span></div>
-							</div>
+								<div id="valueOfU"><p><b>50</b></p></div>
+							</div>			
+
+							<div class="manage-tools">
+								<div id="UpButtonEnter" class="left-btn"><img class="img-svg img-svg-left" src="img/triangle.svg" alt="Up"><span>Up</span></div>
+								<div id="DownButtonEnter" class="right-btn"><img class="img-svg img-svg-right" src="img/triangle.svg" alt="Down"><span>Dw</span></div>
+								<div id="valueOfU1"><p><b>50</b></p></div>
+							</div> 
+
 						</div>
 
 					</div>
