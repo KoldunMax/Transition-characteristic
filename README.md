@@ -1,4 +1,4 @@
 # Transition-characteristic
 Lab work N3
 
-My own project with blackjack and ~~hookers~~ OOP.
+My own project with blackjack and OOP.
